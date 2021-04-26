@@ -63,13 +63,16 @@ that returns a cons of match beginning and end."
   "Jump to Chinese characters using `avy'."
   :group 'avy)
 
-(defcustom avy-zh--jump-word-timeout 1
+;; TODO: make `avy-zh' support `avy-goto-char-timer'
+(defcustom avy-zh-jump-word-timeout 0.5
   "Seconds to wait for input."
-  :type 'number
+  :type 'float
   :group 'avy-zh)
 
-(defvar avy-zh-treat-word-as-char t
-  "Whether word related `avy-*' commands should be remampped.")
+(defcustom avy-zh-treat-word-as-char t
+  "Whether word related `avy-*' commands should be remapped."
+  :type 'boolean
+  :group 'avy-zh)
 
 (defvar avy-zh--original-avy-goto-char (symbol-function 'avy-goto-char)
   "Original definition of `avy-goto-char'.")
@@ -159,18 +162,20 @@ When SYMBOL is non-nil, jump to symbol start instead of word start."
                      current-prefix-arg))
   (avy-with avy-goto-word-1
     (let* ((str (string char))
-           (regex (cond ((string= str ".")
-                         "\\.")
-                        ((and avy-word-punc-regexp
-                              (string-match avy-word-punc-regexp str))
-                         (regexp-quote str))
-                        (t
-                         (concat
-                          "\\b"
-                          str
-                          (let ((chinese-regexp (zh-lib-build-regexp-char char t)))
-                            (unless (string= chinese-regexp "")
-                              (concat "\\|" chinese-regexp))))))))
+            (regex
+              (cond
+                ((string= str ".")
+                  "\\.")
+                ((and avy-word-punc-regexp
+                      (string-match avy-word-punc-regexp str))
+                  (regexp-quote str))
+                (t
+                  (concat
+                    "\\b"
+                    str
+                    (let ((chinese-regexp (zh-lib-build-regexp-char char t)))
+                      (unless (string= chinese-regexp "")
+                        (concat "\\|" chinese-regexp))))))))
       (avy-jump regex :window-flip arg))))
 
 (defun avy-zh-goto-subword-0 (&optional arg predicate beg end)
