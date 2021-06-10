@@ -1,11 +1,9 @@
 ;;; avy-zh.el --- Jump to Chinese characters using avy
 
-;;; Copyright (C) 2021 dalu
-
 ;; Author: dalu <mou.tong@qq.com>
 ;; Maintainer: dalu <mou.tong@qq.com>
-;; Version: 0.1
-;; Package-Requires: ((avy "0.4.0") (zh-lib "0.1"))
+;; Version: 0.1.0
+;; Package-Requires: ((avy "0.4.0") (zh-lib "0.1.0"))
 ;; Homepage: https://github.com/dalugm/evil-zh
 ;; Keywords: Chinese, point, location
 
@@ -80,7 +78,8 @@ that returns a cons of match beginning and end."
 (defvar avy-zh--original-avy-goto-char-2 (symbol-function 'avy-goto-char-2)
   "Original definition of `avy-goto-char-2'.")
 
-(defvar avy-zh--original-avy-goto-char-in-line (symbol-function 'avy-goto-char-in-line)
+(defvar avy-zh--original-avy-goto-char-in-line
+        (symbol-function 'avy-goto-char-in-line)
   "Original definition of `avy-goto-char-in-line'.")
 
 (defvar avy-zh--original-avy-goto-word-0 (symbol-function 'avy-goto-word-0)
@@ -89,13 +88,16 @@ that returns a cons of match beginning and end."
 (defvar avy-zh--original-avy-goto-word-1 (symbol-function 'avy-goto-word-1)
   "Original definition of `avy-goto-word-1'.")
 
-(defvar avy-zh--original-avy-goto-subword-0 (symbol-function 'avy-goto-subword-0)
+(defvar avy-zh--original-avy-goto-subword-0
+        (symbol-function 'avy-goto-subword-0)
   "Original definition of `avy-goto-subword-0'.")
 
-(defvar avy-zh--original-avy-goto-subword-1 (symbol-function 'avy-goto-subword-1)
+(defvar avy-zh--original-avy-goto-subword-1
+        (symbol-function 'avy-goto-subword-1)
   "Original definition of `avy-goto-subword-1'.")
 
-(defvar avy-zh--original-avy-zh-goto-word-or-subword-1 (symbol-function 'avy-zh-goto-word-or-subword-1)
+(defvar avy-zh--original-avy-zh-goto-word-or-subword-1
+        (symbol-function 'avy-zh-goto-word-or-subword-1)
   "Original definition of `avy-zh-goto-word-or-subword-1'.")
 
 (defun avy-zh-goto-char (char &optional arg)
@@ -162,20 +164,20 @@ When SYMBOL is non-nil, jump to symbol start instead of word start."
                      current-prefix-arg))
   (avy-with avy-goto-word-1
     (let* ((str (string char))
-            (regex
-              (cond
-                ((string= str ".")
-                  "\\.")
-                ((and avy-word-punc-regexp
-                      (string-match avy-word-punc-regexp str))
-                  (regexp-quote str))
-                (t
-                  (concat
-                    "\\b"
-                    str
-                    (let ((chinese-regexp (zh-lib-build-regexp-char char t)))
-                      (unless (string= chinese-regexp "")
-                        (concat "\\|" chinese-regexp))))))))
+           (regex
+             (cond
+               ((string= str ".")
+                 "\\.")
+               ((and avy-word-punc-regexp
+                     (string-match avy-word-punc-regexp str))
+                 (regexp-quote str))
+               (t
+                 (concat "\\b"
+                         str
+                         (let ((chinese-regexp
+                                (zh-lib-build-regexp-char char t)))
+                                 (unless (string= chinese-regexp "")
+                                   (concat "\\|" chinese-regexp))))))))
       (avy-jump regex :window-flip arg))))
 
 (defun avy-zh-goto-subword-0 (&optional arg predicate beg end)
@@ -231,8 +233,10 @@ The case of CHAR is ignored."
     (let* ((char (downcase char))
            (chinese-regexp (zh-lib-build-regexp-char char t)))
       (avy-zh-goto-subword-0
-       arg (lambda () (or (eq (downcase (char-after)) char)
-                      (string-match-p chinese-regexp (string (char-after)))))))))
+       arg
+       (lambda ()
+         (or (eq (downcase (char-after)) char)
+             (string-match-p chinese-regexp (string (char-after)))))))))
 
 (defun avy-zh-goto-word-or-subword-1 ()
   "`avy-zh' replacement of `avy-goto-word-or-subword-1'.
@@ -252,15 +256,15 @@ Which one depends on variable `subword-mode'."
   :group avy-zh
   (if avy-zh-mode
       (progn
-        (fset 'avy-goto-char 'avy-zh-goto-char)
-        (fset 'avy-goto-char-2 'avy-zh-goto-char-2)
-        (fset 'avy-goto-char-in-line 'avy-zh-goto-char-in-line)
+        (fset 'avy-goto-char #'avy-zh-goto-char)
+        (fset 'avy-goto-char-2 #'avy-zh-goto-char-2)
+        (fset 'avy-goto-char-in-line #'avy-zh-goto-char-in-line)
         (when avy-zh-treat-word-as-char
-          (fset 'avy-goto-word-0 'avy-zh-goto-word-0)
-          (fset 'avy-goto-word-1 'avy-zh-goto-word-1)
-          (fset 'avy-goto-subword-0 'avy-zh-goto-subword-0)
-          (fset 'avy-goto-subword-1 'avy-zh-goto-subword-1)
-          (fset 'avy-goto-word-or-subword-1 'avy-zh-goto-word-or-subword-1)))
+          (fset 'avy-goto-word-0 #'avy-zh-goto-word-0)
+          (fset 'avy-goto-word-1 #'avy-zh-goto-word-1)
+          (fset 'avy-goto-subword-0 #'avy-zh-goto-subword-0)
+          (fset 'avy-goto-subword-1 #'avy-zh-goto-subword-1)
+          (fset 'avy-goto-word-or-subword-1 #'avy-zh-goto-word-or-subword-1)))
     (progn
       (fset 'avy-goto-char avy-zh--original-avy-goto-char)
       (fset 'avy-goto-char-2 avy-zh--original-avy-goto-char-2)
