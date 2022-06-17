@@ -250,10 +250,10 @@ Which one depends on variable `subword-mode'."
 
 ;;;###autoload
 (define-minor-mode avy-zh-mode
-  "Toggle `avy-zh-mode'."
-  nil
-  " Avy-ZH"
-  :group avy-zh
+  "Jump to ZHongwen using `avy'."
+  :init-value nil
+  :lighter " Avy-ZH"
+  :group 'avy-zh
   (if avy-zh-mode
       (progn
         (fset 'avy-goto-char #'avy-zh-goto-char)
