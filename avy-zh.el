@@ -51,11 +51,11 @@ When GROUP is non-nil, it's either a match group in REGEX, or a function
 that returns a cons of match beginning and end."
     (setq avy-action (or action avy-action))
     (let ((avy-all-windows
-            (if window-flip
-                (not avy-all-windows)
-              avy-all-windows)))
+           (if window-flip
+               (not avy-all-windows)
+             avy-all-windows)))
       (avy-process
-        (avy--regex-candidates regex beg end pred group)))))
+       (avy--regex-candidates regex beg end pred group)))))
 
 (defgroup avy-zh nil
   "Jump to Chinese characters using `avy'."
@@ -79,7 +79,7 @@ that returns a cons of match beginning and end."
   "Original definition of `avy-goto-char-2'.")
 
 (defvar avy-zh--original-avy-goto-char-in-line
-        (symbol-function 'avy-goto-char-in-line)
+  (symbol-function 'avy-goto-char-in-line)
   "Original definition of `avy-goto-char-in-line'.")
 
 (defvar avy-zh--original-avy-goto-word-0 (symbol-function 'avy-goto-word-0)
@@ -89,15 +89,15 @@ that returns a cons of match beginning and end."
   "Original definition of `avy-goto-word-1'.")
 
 (defvar avy-zh--original-avy-goto-subword-0
-        (symbol-function 'avy-goto-subword-0)
+  (symbol-function 'avy-goto-subword-0)
   "Original definition of `avy-goto-subword-0'.")
 
 (defvar avy-zh--original-avy-goto-subword-1
-        (symbol-function 'avy-goto-subword-1)
+  (symbol-function 'avy-goto-subword-1)
   "Original definition of `avy-goto-subword-1'.")
 
 (defvar avy-zh--original-avy-zh-goto-word-or-subword-1
-        (symbol-function 'avy-zh-goto-word-or-subword-1)
+  (symbol-function 'avy-zh-goto-word-or-subword-1)
   "Original definition of `avy-zh-goto-word-or-subword-1'.")
 
 (defun avy-zh-goto-char (char &optional arg)
@@ -109,9 +109,9 @@ The window scope is determined by `avy-all-windows' (ARG negates it)."
                      current-prefix-arg))
   (avy-with avy-goto-char
     (avy-jump
-      (zh-lib-build-regexp-char char
-                                (not zh-lib-with-punctuation))
-        :window-flip arg)))
+     (zh-lib-build-regexp-char char
+                               (not zh-lib-with-punctuation))
+     :window-flip arg)))
 
 (defun avy-zh-goto-char-2 (char1 char2 &optional arg)
   "`avy-zh' replacement of `avy-goto-char-2'.
@@ -136,8 +136,8 @@ Jump to the currently visible CHAR in the current line."
   (interactive (list (read-char "char: " t)))
   (avy-with avy-goto-char
     (avy-jump
-      (zh-lib-build-regexp-char char
-                                (not zh-lib-with-punctuation))
+     (zh-lib-build-regexp-char char
+                               (not zh-lib-with-punctuation))
      :beg (line-beginning-position)
      :end (line-end-position))))
 
@@ -165,19 +165,19 @@ When SYMBOL is non-nil, jump to symbol start instead of word start."
   (avy-with avy-goto-word-1
     (let* ((str (string char))
            (regex
-             (cond
-               ((string= str ".")
-                 "\\.")
-               ((and avy-word-punc-regexp
-                     (string-match avy-word-punc-regexp str))
-                 (regexp-quote str))
-               (t
-                 (concat "\\b"
-                         str
-                         (let ((chinese-regexp
-                                (zh-lib-build-regexp-char char t)))
-                                 (unless (string= chinese-regexp "")
-                                   (concat "\\|" chinese-regexp))))))))
+            (cond
+             ((string= str ".")
+              "\\.")
+             ((and avy-word-punc-regexp
+                   (string-match avy-word-punc-regexp str))
+              (regexp-quote str))
+             (t
+              (concat "\\b"
+                      str
+                      (let ((chinese-regexp
+                             (zh-lib-build-regexp-char char t)))
+                        (unless (string= chinese-regexp "")
+                          (concat "\\|" chinese-regexp))))))))
       (avy-jump regex :window-flip arg))))
 
 (defun avy-zh-goto-subword-0 (&optional arg predicate beg end)
