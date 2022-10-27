@@ -34,29 +34,6 @@
 (require 'avy)
 (require 'zh-lib)
 
-(eval-when-compile
-  (declare-function subword-backward "subword"))
-
-;; backward compatible with avy before the introduction of
-;; \\[avy-jump] introduction in 0.5.0
-(when (not (boundp 'avy-jump))
-  (cl-defun avy-jump (regex &key window-flip beg end action pred group)
-    "Jump to REGEX.
-The window scope is determined by `avy-all-windows'.
-When WINDOW-FLIP is non-nil, do the opposite of `avy-all-windows'.
-BEG and END narrow the scope where candidates are searched.
-ACTION is a function that takes point position as an argument.
-When PRED is non-nil, it's a filter for matching point positions.
-When GROUP is non-nil, it's either a match group in REGEX, or a function
-that returns a cons of match beginning and end."
-    (setq avy-action (or action avy-action))
-    (let ((avy-all-windows
-           (if window-flip
-               (not avy-all-windows)
-             avy-all-windows)))
-      (avy-process
-       (avy--regex-candidates regex beg end pred group)))))
-
 (defgroup avy-zh nil
   "Jump to Chinese characters using `avy'."
   :group 'avy)
@@ -78,8 +55,7 @@ that returns a cons of match beginning and end."
 (defvar avy-zh--original-avy-goto-char-2 (symbol-function 'avy-goto-char-2)
   "Original definition of `avy-goto-char-2'.")
 
-(defvar avy-zh--original-avy-goto-char-in-line
-  (symbol-function 'avy-goto-char-in-line)
+(defvar avy-zh--original-avy-goto-char-in-line (symbol-function 'avy-goto-char-in-line)
   "Original definition of `avy-goto-char-in-line'.")
 
 (defvar avy-zh--original-avy-goto-word-0 (symbol-function 'avy-goto-word-0)
@@ -88,16 +64,13 @@ that returns a cons of match beginning and end."
 (defvar avy-zh--original-avy-goto-word-1 (symbol-function 'avy-goto-word-1)
   "Original definition of `avy-goto-word-1'.")
 
-(defvar avy-zh--original-avy-goto-subword-0
-  (symbol-function 'avy-goto-subword-0)
+(defvar avy-zh--original-avy-goto-subword-0 (symbol-function 'avy-goto-subword-0)
   "Original definition of `avy-goto-subword-0'.")
 
-(defvar avy-zh--original-avy-goto-subword-1
-  (symbol-function 'avy-goto-subword-1)
+(defvar avy-zh--original-avy-goto-subword-1 (symbol-function 'avy-goto-subword-1)
   "Original definition of `avy-goto-subword-1'.")
 
-(defvar avy-zh--original-avy-zh-goto-word-or-subword-1
-  (symbol-function 'avy-zh-goto-word-or-subword-1)
+(defvar avy-zh--original-avy-zh-goto-word-or-subword-1 (symbol-function 'avy-zh-goto-word-or-subword-1)
   "Original definition of `avy-zh-goto-word-or-subword-1'.")
 
 (defun avy-zh-goto-char (char &optional arg)
@@ -105,29 +78,15 @@ that returns a cons of match beginning and end."
 
 Jump to the currently visible CHAR.
 The window scope is determined by `avy-all-windows' (ARG negates it)."
-  (interactive (list (read-char "char: ")
+  (interactive (list (read-char "char: " t)
                      current-prefix-arg))
   (avy-with avy-goto-char
-    (avy-jump
-     (zh-lib-build-regexp-char char
-                               (not zh-lib-with-punctuation))
-     :window-flip arg)))
-
-(defun avy-zh-goto-char-2 (char1 char2 &optional arg)
-  "`avy-zh' replacement of `avy-goto-char-2'.
-
-Jump to the currently visible CHAR1 followed by CHAR2.
-The window scope is determined by `avy-all-windows'.
-When ARG is non-nil, do the opposite of `avy-all-windows'.
-BEG and END narrow the scope where candidates are searched."
-  (interactive (list (read-char "char 1: ")
-                     (read-char "char 2: ")
-                     current-prefix-arg))
-  (avy-with avy-goto-char-2
-    (avy-jump
-     (zh-lib-build-regexp-string (string char1 char2)
-                                 (not zh-lib-with-punctuation))
-     :window-flip arg)))
+    (avy-jump (if (= 13 char)
+                  "\n"
+                (zh-lib-build-regexp-char
+                 char
+                 (not zh-lib-with-punctuation)))
+              :window-flip arg)))
 
 (defun avy-zh-goto-char-in-line (char)
   "`avy-zh' replacement of `avy-goto-char-in-line'.
@@ -135,11 +94,44 @@ BEG and END narrow the scope where candidates are searched."
 Jump to the currently visible CHAR in the current line."
   (interactive (list (read-char "char: " t)))
   (avy-with avy-goto-char
-    (avy-jump
-     (zh-lib-build-regexp-char char
-                               (not zh-lib-with-punctuation))
-     :beg (line-beginning-position)
-     :end (line-end-position))))
+    (avy-jump (zh-lib-build-regexp-char
+               char
+               (not zh-lib-with-punctuation))
+              :beg (line-beginning-position)
+              :end (line-end-position))))
+
+(defun avy-zh-goto-char-2 (char1 char2 &optional arg beg end)
+  "`avy-zh' replacement of `avy-goto-char-2'.
+
+Jump to the currently visible CHAR1 followed by CHAR2.
+The window scope is determined by `avy-all-windows'.
+When ARG is non-nil, do the opposite of `avy-all-windows'.
+BEG and END narrow the scope where candidates are searched."
+  (interactive (list (let ((c1 (read-char "char 1: " t)))
+                       (if (memq c1 '(? ?\b))
+                           (keyboard-quit)
+                         c1))
+                     (let ((c2 (read-char "char 2: " t)))
+                       (cond ((eq c2 ?)
+                              (keyboard-quit))
+                             ((memq c2 avy-del-last-char-by)
+                              (keyboard-escape-quit)
+                              (call-interactively 'avy-goto-char-2))
+                             (t
+                              c2)))
+                     current-prefix-arg
+                     nil nil))
+  (when (eq char1 ?)
+    (setq char1 ?\n))
+  (when (eq char2 ?)
+    (setq char2 ?\n))
+  (avy-with avy-goto-char-2
+    (avy-jump (zh-lib-build-regexp-string
+               (string char1 char2)
+               (not zh-lib-with-punctuation))
+              :window-flip arg
+              :beg beg
+              :end end)))
 
 (defun avy-zh-goto-word-0 (arg)
   "`avy-zh' replacement of `avy-goto-word-0'.
@@ -152,7 +144,7 @@ BEG and END narrow the scope where candidates are searched."
   (let ((avy-goto-word-0-regexp "\\b\\sw\\|\\cc"))
     (funcall avy-zh--original-avy-goto-word-0 arg)))
 
-(defun avy-zh-goto-word-1 (char &optional arg)
+(defun avy-zh-goto-word-1 (char &optional arg beg end symbol)
   "`avy-zh' replacement of `avy-goto-word-1'.
 
 Jump to the currently visible CHAR at a word start.
@@ -164,21 +156,29 @@ When SYMBOL is non-nil, jump to symbol start instead of word start."
                      current-prefix-arg))
   (avy-with avy-goto-word-1
     (let* ((str (string char))
-           (regex
-            (cond
-             ((string= str ".")
-              "\\.")
-             ((and avy-word-punc-regexp
-                   (string-match avy-word-punc-regexp str))
-              (regexp-quote str))
-             (t
-              (concat "\\b"
-                      str
-                      (let ((chinese-regexp
-                             (zh-lib-build-regexp-char char t)))
-                        (unless (string= chinese-regexp "")
-                          (concat "\\|" chinese-regexp))))))))
-      (avy-jump regex :window-flip arg))))
+           (regex (cond
+                   ((string= str ".")
+                    "\\.")
+                   ((and avy-word-punc-regexp
+                         (string-match avy-word-punc-regexp str))
+                    (regexp-quote str))
+                   ((<= char 26)
+                    str)
+                   (t
+                    (concat
+                     (if symbol "\\_<" "\\b")
+                     str
+                     (let ((chinese-regexp (zh-lib-build-regexp-char
+                                            char
+                                            (not zh-lib-with-punctuation))))
+                       (unless (string= chinese-regexp "")
+                         (concat "\\|" chinese-regexp))))))))
+      (avy-jump regex
+                :window-flip arg
+                :beg beg
+                :end end))))
+
+(declare-function subword-backward "subword")
 
 (defun avy-zh-goto-subword-0 (&optional arg predicate beg end)
   "`avy-zh' replacement of `avy-goto-subword-0'.
@@ -202,24 +202,26 @@ BEG and END narrow the scope where candidates are searched."
           (dolist (char avy-subword-extra-word-chars)
             (modify-syntax-entry char "w" syn-tbl))
           (with-syntax-table syn-tbl
-            (let ((ws (window-start))
+            (let ((ws (or beg (window-start)))
                   window-cands)
               (save-excursion
-                (goto-char (window-end (selected-window) t))
+                (goto-char (or end (window-end (selected-window) t)))
                 (subword-backward)
                 (while (> (point) ws)
                   (when (or (null predicate)
                             (and predicate (funcall predicate)))
-                    (unless (get-char-property (point) 'invisible)
-                      (push (cons (point) (selected-window)) window-cands)))
+                    (unless (not (avy--visible-p (point)))
+                      (push (cons (cons (point) (1+ (point)))
+                                  (selected-window)) window-cands)))
                   (subword-backward))
                 (and (= (point) ws)
                      (or (null predicate)
                          (and predicate (funcall predicate)))
                      (not (get-char-property (point) 'invisible))
-                     (push (cons (point) (selected-window)) window-cands)))
+                     (push (cons (cons (point) (1+ (point)))
+                                 (selected-window)) window-cands)))
               (setq candidates (nconc candidates window-cands))))))
-      (avy-process candidates (avy--style-fn avy-style)))))
+      (avy-process candidates))))
 
 (defun avy-zh-goto-subword-1 (char &optional arg)
   "`avy-zh' replacement of `avy-goto-subword-1'.
@@ -235,7 +237,7 @@ The case of CHAR is ignored."
       (avy-zh-goto-subword-0
        arg
        (lambda ()
-         (or (eq (downcase (char-after)) char)
+         (or (and (char-after) (eq (downcase (char-after)) char))
              (string-match-p chinese-regexp (string (char-after)))))))))
 
 (defun avy-zh-goto-word-or-subword-1 ()
