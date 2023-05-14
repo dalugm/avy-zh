@@ -81,7 +81,7 @@ The window scope is determined by `avy-all-windows' (ARG negates it)."
   (interactive (list (read-char "char: " t)
                      current-prefix-arg))
   (avy-with avy-goto-char
-    (avy-jump (if (= 13 char)
+    (avy-jump (if (eq char ?\C-m)
                   "\n"
                 (zh-lib-build-regexp-char
                  char
@@ -108,11 +108,11 @@ The window scope is determined by `avy-all-windows'.
 When ARG is non-nil, do the opposite of `avy-all-windows'.
 BEG and END narrow the scope where candidates are searched."
   (interactive (list (let ((c1 (read-char "char 1: " t)))
-                       (if (memq c1 '(? ?\b))
+                       (if (memq c1 '(?\C-\[ ?\C-h))
                            (keyboard-quit)
                          c1))
                      (let ((c2 (read-char "char 2: " t)))
-                       (cond ((eq c2 ?)
+                       (cond ((eq c2 ?\C-\[)
                               (keyboard-quit))
                              ((memq c2 avy-del-last-char-by)
                               (keyboard-escape-quit)
@@ -121,10 +121,10 @@ BEG and END narrow the scope where candidates are searched."
                               c2)))
                      current-prefix-arg
                      nil nil))
-  (when (eq char1 ?)
-    (setq char1 ?\n))
-  (when (eq char2 ?)
-    (setq char2 ?\n))
+  (when (eq char1 ?\C-m)
+    (setq char1 ?\C-j))
+  (when (eq char2 ?\C-m)
+    (setq char2 ?\C-j))
   (avy-with avy-goto-char-2
     (avy-jump (zh-lib-build-regexp-string
                (string char1 char2)
