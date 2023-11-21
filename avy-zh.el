@@ -1,4 +1,4 @@
-;;; avy-zh.el --- Jump to Chinese characters using avy
+;;; avy-zh.el --- Jump to Chinese characters using avy  -*- lexical-binding: t; -*-
 
 ;; Author: dalu <mou.tong@qq.com>
 ;; Maintainer: dalu <mou.tong@qq.com>
@@ -179,6 +179,7 @@ When SYMBOL is non-nil, jump to symbol start instead of word start."
                 :end end))))
 
 (declare-function subword-backward "subword")
+(defvar subword-backward-regexp)
 
 (defun avy-zh-goto-subword-0 (&optional arg predicate beg end)
   "`avy-zh' replacement of `avy-goto-subword-0'.
