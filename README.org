@@ -9,63 +9,62 @@
 
 * About
 
-Jump to Chinese characters using =avy=.
-
-使用 =avy= 跳转到中文字符。
+Jump to Chinese characters using =[[https://github.com/abo-abo/avy][avy]]=.
 
 * Supported Commands
 
-  Most =avy= commands related to char/word jumping are supported:
+Most =avy= commands related to char/word jumping are supported:
 
-  - =avy-goto-char=
-  - =avy-goto-char-2=
-  - =avy-goto-char-in-line=
-  - =avy-goto-word-0=
-  - =avy-goto-word-1=
-  - =avy-goto-subword-0=
-  - =avy-goto-subword-1=
-  - =avy-goto-word-or-subword-1=
+- =avy-goto-char=
+- =avy-goto-char-2=
+- =avy-goto-char-in-line=
+- =avy-goto-word-0=
+- =avy-goto-word-1=
+- =avy-goto-subword-0=
+- =avy-goto-subword-1=
+- =avy-goto-word-or-subword-1=
 
-  When the =avy-zh= is enabled, the supported commands will be able to
-  jump to both Chinese and English characters/words. That is, you don't
-  need remember extra commands or create extra key bindings in order to
-  jump to Chinese characters. All you need to do is to enable the minor
-  mode and use your =avy= key bindings to jump to Chinese characters.
+When the =avy-zh= is enabled, the supported commands will be able to
+jump to both Chinese and English characters/words. That is, you don't
+need remember extra commands or create extra key bindings in order to
+jump to Chinese characters. All you need to do is to enable the minor
+mode and use your =avy= key bindings to jump to Chinese characters.
 
-  In addition, you can also use English punctuation to jump to
-  Chinese/English punctuation.
+In addition, you can also use English punctuation to jump to
+Chinese/English punctuation.
 
-  For example, use =.= to jump to both =。= and =.=, and =<= to jump to
-  both =《= and =<=, etc. Behind the scene, =avy-zh= uses [[https://github.com/dalugm/zh-lib.el][zh-lib.el]] to
-  translate the letter to Chinese characters and English punctuation to
-  Chinese punctuation.  To see the full list of punctuation that are
-  supported, see [[https://github.com/dalugm/zh-lib.el][zh-lib.el]].
+For example, use =.= to jump to both =。= and =.=, and =<= to jump to
+both =《= and =<=, etc. Behind the scene, =avy-zh= uses [[https://github.com/dalugm/zh-lib.el][zh-lib.el]] to
+translate the letter to Chinese characters and English punctuation to
+Chinese punctuation.  To see the full list of punctuation that are
+supported, see [[https://github.com/dalugm/zh-lib.el][zh-lib.el]].
 
-  Besides, all other packages using =avy= will also be able to handle
-  Chinese characters.
+Besides, all other packages using =avy= will also be able to handle
+Chinese characters.
 
 * Setup
 
-#+BEGIN_SRC elisp
+#+begin_src elisp
   (add-to-list 'load-path "path/to/avy-zh")
   (require 'avy-zh)
 
-  (global-avy-zh-mode)
-#+END_SRC
+  (with-eval-after-load 'avy
+    (avy-zh-mode +1))
+#+end_src
 
 * Disable Word Jumping Support
 
-  By default, =avy-zh= will remap both word jumping and character
-  jumping methods in =avy=. If you only want to remap character jumping
-  methods, use:
+By default, =avy-zh= will remap both word jumping and character
+jumping methods in =avy=. If you only want to remap character jumping
+methods, use:
 
-  : (setq avy-zh-treat-word-as-char nil)
+: (setq avy-zh-treat-word-as-char nil)
 
-  After setting this, the following commands in =avy= are not able to
-  jump to Chinese characters:
+After setting this, the following commands in =avy= are not able to
+jump to Chinese characters:
 
-  - =avy-goto-word-0=
-  - =avy-goto-word-1=
-  - =avy-goto-subword-0=
-  - =avy-goto-subword-1=
-  - =avy-goto-word-or-subword-1=
+- =avy-goto-word-0=
+- =avy-goto-word-1=
+- =avy-goto-subword-0=
+- =avy-goto-subword-1=
+- =avy-goto-word-or-subword-1=

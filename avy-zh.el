@@ -1,8 +1,8 @@
-;;; avy-zh.el --- Jump to Chinese characters using avy  -*- lexical-binding: t; -*-
+;;; avy-zh.el -- Jump to Chinese characters using `avy' -*- lexical-binding: t -*-
 
 ;; Author: dalu <mou.tong@qq.com>
 ;; Maintainer: dalu <mou.tong@qq.com>
-;; Version: 0.1.0
+;; Version: 0.2.0
 ;; Package-Requires: ((avy "0.4.0") (zh-lib "0.1.0"))
 ;; Homepage: https://github.com/dalugm/evil-zh
 ;; Keywords: Chinese, point, location
@@ -25,8 +25,6 @@
 ;;; Commentary:
 ;;
 ;; Jump to Chinese characters using `avy'.
-;;
-;; 使用 `avy' 跳转到中文字符。
 ;;
 
 ;;; Code:
@@ -254,9 +252,7 @@ Which one depends on variable `subword-mode'."
 ;;;###autoload
 (define-minor-mode avy-zh-mode
   "Jump to ZHongwen using `avy'."
-  :init-value nil
-  :lighter " Avy-ZH"
-  :group 'avy-zh
+  :global t
   (if avy-zh-mode
       (progn
         (fset 'avy-goto-char #'avy-zh-goto-char)
@@ -277,25 +273,6 @@ Which one depends on variable `subword-mode'."
       (fset 'avy-goto-subword-0 avy-zh--original-avy-goto-subword-0)
       (fset 'avy-goto-subword-1 avy-zh--original-avy-goto-subword-1)
       (fset 'avy-goto-word-or-subword-1 avy-zh--original-avy-goto-subword-1))))
-
-;;;###autoload
-(define-globalized-minor-mode global-avy-zh-mode
-  avy-zh-mode
-  turn-on-avy-zh-mode
-  :group 'avy-zh
-  :require 'avy-zh)
-
-;;;###autoload
-(defun turn-on-avy-zh-mode ()
-  "Turn on `avy-zh-mode'."
-  (interactive)
-  (avy-zh-mode +1))
-
-;;;###autoload
-(defun turn-off-avy-zh-mode ()
-  "Turn off `avy-zh-mode'."
-  (interactive)
-  (avy-zh-mode -1))
 
 (provide 'avy-zh)
 
