@@ -4,7 +4,7 @@
 ;; Maintainer: dalu <mou.tong@qq.com>
 ;; Version: 0.2.0
 ;; Package-Requires: ((avy "0.4.0") (zh-lib "0.1.0"))
-;; Homepage: https://github.com/dalugm/evil-zh
+;; URL: https://github.com/dalugm/evil-zh
 ;; Keywords: Chinese, point, location
 
 ;; This file is NOT part of GNU Emacs
