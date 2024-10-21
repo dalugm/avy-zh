@@ -18,6 +18,7 @@ Most =avy= commands related to char/word jumping are supported:
 - =avy-goto-char=
 - =avy-goto-char-2=
 - =avy-goto-char-in-line=
+- =avy-goto-char-timer=
 - =avy-goto-word-0=
 - =avy-goto-word-1=
 - =avy-goto-subword-0=
