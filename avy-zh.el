@@ -3,7 +3,7 @@
 ;; Author: dalu <mou.tong@qq.com>
 ;; Maintainer: dalu <mou.tong@qq.com>
 ;; Version: 0.4.0
-;; Package-Requires: ((emacs "25.1") (avy "0.5.0") (zh-lib "0.2.0"))
+;; Package-Requires: ((emacs "30.1") (avy "0.5.0") (zh-lib "0.2.0"))
 ;; URL: https://github.com/dalugm/avy-zh
 ;; Keywords: Chinese, point, location
 
@@ -30,6 +30,7 @@
 ;;; Code:
 
 (require 'avy)
+(require 'subr-x)
 (require 'zh-lib)
 
 (defgroup avy-zh nil
@@ -58,8 +59,8 @@ The window scope is determined by `avy-all-windows' (ARG negates it)."
 Jump to the currently visible CHAR in the current line."
   (avy-with avy-goto-char
     (avy-jump (zh-lib-build-regexp char)
-              :beg (line-beginning-position)
-              :end (line-end-position))))
+              :beg (pos-bol)
+              :end (pos-eol))))
 
 (defun avy-zh-goto-char-2 (char1 char2 &optional arg beg end)
   "`avy-zh' version of `avy-goto-char-2'.
@@ -86,11 +87,11 @@ BEG and END narrow the scope where candidates are searched."
     (while (and (not done)
                 (setq char
                       (read-char
-                       (if (equal text "")
+                       (if (string-empty-p text)
                            "char: "
                          (format "char (%s): " text))
                        t
-                       (and (not (equal text ""))
+                       (and (not (string-empty-p text))
                             avy-timeout-seconds))))
       (cond
        ((eq char ?\C-m)
@@ -98,7 +99,7 @@ BEG and END narrow the scope where candidates are searched."
             (setq done t)
           (setq text (concat text "\n"))))
        ((memq char avy-del-last-char-by)
-        (unless (equal text "")
+        (unless (string-empty-p text)
           (setq text (substring text 0 -1))))
        ((eq char ?\e)
         (keyboard-quit))
@@ -113,7 +114,7 @@ Read one or many consecutive chars and jump to the first one.  The
 window scope is determined by `avy-all-windows' (ARG negates it)."
   (avy-with avy-goto-char-timer
     (setq avy-text (avy-zh--read-timer-input))
-    (unless (equal avy-text "")
+    (unless (string-empty-p avy-text)
       (avy-jump (zh-lib-build-regexp avy-text)
                 :window-flip arg))))
 
@@ -150,9 +151,8 @@ When SYMBOL is non-nil, jump to symbol start instead of word start."
                     (concat
                      (if symbol "\\_<" "\\b")
                      str
-                     (let ((chinese-regexp (zh-lib-build-regexp char)))
-                       (unless (string= chinese-regexp "")
-                         (concat "\\|" chinese-regexp))))))))
+                     "\\|"
+                     (zh-lib-build-regexp char))))))
       (avy-jump regex
                 :window-flip arg
                 :beg beg
@@ -242,15 +242,14 @@ The case of CHAR is ignored."
           (advice-add 'avy-goto-word-1            :override #'avy-zh-goto-word-1)
           (advice-add 'avy-goto-subword-0         :override #'avy-zh-goto-subword-0)
           (advice-add 'avy-goto-subword-1         :override #'avy-zh-goto-subword-1)))
-    (progn
-      (advice-remove 'avy-goto-char              #'avy-zh-goto-char)
-      (advice-remove 'avy-goto-char-2            #'avy-zh-goto-char-2)
-      (advice-remove 'avy-goto-char-in-line      #'avy-zh-goto-char-in-line)
-      (advice-remove 'avy-goto-char-timer        #'avy-zh-goto-char-timer)
-      (advice-remove 'avy-goto-word-0            #'avy-zh-goto-word-0)
-      (advice-remove 'avy-goto-word-1            #'avy-zh-goto-word-1)
-      (advice-remove 'avy-goto-subword-0         #'avy-zh-goto-subword-0)
-      (advice-remove 'avy-goto-subword-1         #'avy-zh-goto-subword-1))))
+    (advice-remove 'avy-goto-char              #'avy-zh-goto-char)
+    (advice-remove 'avy-goto-char-2            #'avy-zh-goto-char-2)
+    (advice-remove 'avy-goto-char-in-line      #'avy-zh-goto-char-in-line)
+    (advice-remove 'avy-goto-char-timer        #'avy-zh-goto-char-timer)
+    (advice-remove 'avy-goto-word-0            #'avy-zh-goto-word-0)
+    (advice-remove 'avy-goto-word-1            #'avy-zh-goto-word-1)
+    (advice-remove 'avy-goto-subword-0         #'avy-zh-goto-subword-0)
+    (advice-remove 'avy-goto-subword-1         #'avy-zh-goto-subword-1)))
 
 (provide 'avy-zh)
 ;;; avy-zh.el ends here
